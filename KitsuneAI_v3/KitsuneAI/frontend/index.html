@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitsune AI 🦊</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ====== API KEY MODAL ====== -->
+<div id="apimodal" class="modal-overlay show">
+  <div class="modal-box">
+    <div class="modal-icon">🔑</div>
+    <h2>Masukkan API Key</h2>
+    <p>Kitsune AI pakai <strong>GPT-4o</strong> — bisa baca teks <em>dan</em> foto. API key hanya tersimpan di browsermu.</p>
+    <div class="modal-note"><span>💡</span> Belum punya? Daftar gratis di OpenAI dan dapat kredit awal untuk mencoba.</div>
+    <div class="input-group">
+      <input type="password" id="apikey-inp" class="modal-input" placeholder="sk-proj-..." autocomplete="off">
+      <button class="toggle-eye" onclick="toggleKeyVis()">👁</button>
+    </div>
+    <div class="modal-model-select">
+      <label>Pilih Model AI:</label>
+      <div class="model-chips">
+        <div class="model-chip active" data-model="gpt-4o" onclick="selectModalModel(this)">GPT-4o ⭐</div>
+        <div class="model-chip" data-model="gpt-4o-mini" onclick="selectModalModel(this)">GPT-4o Mini</div>
+        <div class="model-chip" data-model="gpt-4-turbo" onclick="selectModalModel(this)">GPT-4 Turbo</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveApiKey()">Simpan & Mulai Chat 🚀</button>
+    <a href="https://platform.openai.com/api-keys" target="_blank" class="modal-link">→ Buat API Key OpenAI (Gratis)</a>
+  </div>
+</div>
+
+<!-- ====== PUBLISH SCRIPT MODAL ====== -->
+<div id="publishmodal" class="modal-overlay">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-icon">📝</div>
+    <h2>Publish Script</h2>
+    <p>Bagikan script kamu ke Kitsune Script Hub!</p>
+    <div class="pub-form">
+      <input type="text" id="pub-title" class="modal-input" placeholder="Nama script (cth: Blox Fruits Auto Farm V3)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <select id="pub-lang" class="modal-input">
+          <option value="lua">🌙 Lua / Roblox</option>
+          <option value="python">🐍 Python</option>
+          <option value="javascript">🟨 JavaScript</option>
+          <option value="typescript">🔷 TypeScript</option>
+          <option value="java">☕ Java</option>
+          <option value="cpp">⚙️ C++</option>
+          <option value="csharp">🔵 C#</option>
+          <option value="go">🐹 Go</option>
+          <option value="rust">🦀 Rust</option>
+          <option value="php">🐘 PHP</option>
+          <option value="ruby">💎 Ruby</option>
+          <option value="swift">🍎 Swift</option>
+          <option value="kotlin">🎯 Kotlin</option>
+          <option value="shell">🖥️ Shell/Bash</option>
+          <option value="html">🌐 HTML/CSS</option>
+          <option value="sql">🗃️ SQL</option>
+          <option value="other">📄 Lainnya</option>
+        </select>
+        <select id="pub-game" class="modal-input">
+          <option value="">🎮 Game (opsional)</option>
+          <option value="Blox Fruits">🍎 Blox Fruits</option>
+          <option value="Pet Simulator X">🐾 Pet Simulator X</option>
+          <option value="Adopt Me">🏠 Adopt Me</option>
+          <option value="Brookhaven">🌆 Brookhaven</option>
+          <option value="King Legacy">👑 King Legacy</option>
+          <option value="Anime Fighting Sim">⚔️ Anime Fighting Sim</option>
+          <option value="Murder Mystery 2">🔪 Murder Mystery 2</option>
+          <option value="Arsenal">🔫 Arsenal</option>
+          <option value="Da Hood">🏙️ Da Hood</option>
+          <option value="Jailbreak">🚗 Jailbreak</option>
+          <option value="Universal">🌐 Universal</option>
+          <option value="Other">📌 Lainnya</option>
+        </select>
+      </div>
+      <textarea id="pub-desc" class="modal-input" rows="2" placeholder="Deskripsi singkat script kamu..."></textarea>
+      <textarea id="pub-code" class="modal-input code-area" rows="6" placeholder="-- Paste kode script di sini...&#10;-- Contoh Roblox Lua:&#10;local Players = game:GetService('Players')"></textarea>
+      <div class="upload-drop" id="pub-drop" onclick="document.getElementById('pub-file').click()" ondragover="event.preventDefault()" ondrop="handlePubDrop(event)">
+        <span>📂 Drag & drop file script, atau klik untuk pilih</span>
+        <small id="pub-file-name"></small>
+        <input type="file" id="pub-file" style="display:none" accept=".lua,.py,.js,.ts,.java,.cpp,.cs,.go,.rs,.php,.rb,.swift,.kt,.sh,.html,.css,.sql,.txt,.r" onchange="handlePubFile(event)">
+      </div>
+      <input type="text" id="pub-tags" class="modal-input" placeholder="Tag: autofarm, op, free, paid (pisah koma)">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-secondary" onclick="closePublishModal()">Batal</button>
+      <button class="btn-primary" style="flex:1" onclick="publishScript()">🚀 Publish Script</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCRIPT DETAIL MODAL ====== -->
+<div id="scriptdetailmodal" class="modal-overlay">
+  <div class="modal-box" style="max-width:600px;max-height:90vh;overflow-y:auto">
+    <div id="script-detail-content"></div>
+    <button class="btn-secondary" onclick="document.getElementById('scriptdetailmodal').classList.remove('show')" style="width:100%;margin-top:10px">Tutup</button>
+  </div>
+</div>
+
+<!-- ====== MAIN APP ====== -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="si-top">
+      <div class="si" title="Chat Baru" onclick="newChat()">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      </div>
+      <div class="si" id="sb-history" title="Riwayat" onclick="switchTab('history')">
+        <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="si" id="sb-search" title="Cari" onclick="switchTab('search')">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      </div>
+      <div class="si" id="sb-projects" title="Proyek" onclick="switchTab('projects')">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      </div>
+      <div class="si active" id="sb-chat" title="Chat" onclick="switchTab('chat')">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <div class="si" id="sb-settings" title="Pengaturan & Tema" onclick="switchTab('settings')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </div>
+    </div>
+    <div class="si-bottom">
+      <!-- 📝 SCRIPT HUB — di atas 👑 -->
+      <div class="crown-btn" id="sb-scripts" title="Script Hub" onclick="switchTab('scripts')" style="font-size:20px">📝</div>
+      <!-- 👑 CREDITS -->
+      <div class="crown-btn" id="sb-crown" title="Credits" onclick="switchTab('credits')">👑</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- CHAT -->
+    <div id="chat-main">
+      <header id="topbar">
+        <div class="topbar-left">
+          <div class="topbar-logo">🦊</div>
+          <span class="topbar-title">Kitsune AI</span>
+          <span class="model-badge" id="model-badge">GPT-4o</span>
+        </div>
+        <div class="topbar-right">
+          <div class="key-status" onclick="showApiModal()">
+            <div class="key-dot" id="key-dot"></div>
+            <span id="key-label">Set Key</span>
+          </div>
+          <button class="topbar-btn" title="Chat Baru" onclick="newChat()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="topbar-btn" title="Tema" onclick="switchTab('settings')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 000 20c2 0 2-1.5 2-3 0-2-1-2-1-4a3 3 0 013-3c2 0 2 1.5 2 2"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div id="messages"><div class="msg-wrap" id="msg-wrap"></div></div>
+
+      <div id="inputarea">
+        <div class="inputwrap">
+          <div id="img-preview-wrap" style="display:none">
+            <div class="img-preview-inner">
+              <img id="img-preview" src="" alt="">
+              <button class="img-remove" onclick="removeImage()">✕</button>
+            </div>
+          </div>
+          <div id="code-preview-wrap" style="display:none">
+            <div class="code-preview-inner">
+              <span id="code-filename">📄 file.lua</span>
+              <button class="img-remove" onclick="removeCode()">✕</button>
+            </div>
+          </div>
+          <div id="inputbox">
+            <div class="input-left">
+              <button class="input-btn" title="Upload Foto" onclick="document.getElementById('file-img').click()">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
+              <button class="input-btn" title="Upload File / Kode / Script" onclick="document.getElementById('file-code').click()">
+                <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </button>
+              <input type="file" id="file-img" accept="image/*" onchange="handleImage(event)" style="display:none">
+              <input type="file" id="file-code" accept=".lua,.py,.js,.ts,.html,.css,.json,.txt,.md,.java,.cpp,.c,.go,.rs,.php,.rb,.swift,.kt,.sh,.sql,.r,.cs" onchange="handleCode(event)" style="display:none">
+            </div>
+            <textarea id="inp" rows="1" placeholder="Tanya apa saja, upload foto/kode, atau cek Script Hub 📝"></textarea>
+            <button id="sendbtn" onclick="sendMsg()">
+              <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <div class="input-hint">Kitsune AI • GPT-4o • Foto 📷 • Kode 💻 • Script Hub 📝</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANELS -->
+    <div id="panelview">
+      <div class="panel-topbar" id="panel-title-wrap">
+        <span id="panel-title"></span>
+        <div id="panel-actions" style="margin-left:auto"></div>
+      </div>
+      <div class="panel-body" id="panel-body"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
